@@ -1,3 +1,5 @@
+import Foundation
+
 @dynamicMemberLookup
 public struct Phantom<Context, WrappedValue>: WrappedType {
     public var wrappedValue: WrappedValue
@@ -204,5 +206,30 @@ public struct Truncated<T: WrappedType> where T.WrappedValue: RangeReplaceableCo
 extension Truncated where T: MonoidType {
     public init(maxLength: Int) {
         self.init(T.identity, maxLength: maxLength)
+    }
+}
+
+@propertyWrapper
+public struct RegEx<T: WrappedType> where T.WrappedValue == String {
+    public var wrappedValue: T {
+        didSet {
+            if !validation(wrappedValue.wrappedValue) {
+                wrappedValue = oldValue
+            }
+        }
+    }
+    private let validation: (String) -> Bool
+
+    public init(_ wrappedValue: T, _ regex: String) {
+        self.wrappedValue = wrappedValue
+        validation = { candidate in
+            NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: candidate)
+        }
+    }
+}
+
+extension RegEx where T: MonoidType {
+    public init(_ regex: String) {
+        self.init(T.identity, regex)
     }
 }
