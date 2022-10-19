@@ -11,9 +11,44 @@ public struct Phantom<Context, WrappedValue>: WrappedType {
     }
 }
 
-public protocol WrappedType {
-    associatedtype WrappedValue
-    var wrappedValue: WrappedValue { get set }
+// MARK: - Monoid
+
+public protocol MonoidType {
+    static var identity: Self { get }
+}
+
+extension Phantom: MonoidType where WrappedValue: MonoidType {
+    public static var identity: Phantom<Context, WrappedValue> {
+        Self(WrappedValue.identity)
+    }
+
+    public init() {
+        self.init(WrappedValue.identity)
+    }
+}
+
+extension String: MonoidType {
+    public static var identity: String = ""
+}
+
+extension Int: MonoidType {
+    public static var identity: Int = 0
+}
+
+extension Float: MonoidType {
+    public static var identity: Float = 0
+}
+
+extension Double: MonoidType {
+    public static var identity: Double = 0
+}
+
+extension Array: MonoidType {
+    public static var identity: Array<Element> { [] }
+}
+
+extension Dictionary: MonoidType {
+    public static var identity: Dictionary<Key, Value> { [:] }
 }
 
 // MARK: - CustomDebugStringConvertible
@@ -106,6 +141,11 @@ extension Phantom: ExpressibleByUnicodeScalarLiteral where WrappedValue: Express
 
 // MARK: - Property Wrappers
 
+public protocol WrappedType {
+    associatedtype WrappedValue
+    var wrappedValue: WrappedValue { get set }
+}
+
 @propertyWrapper
 public struct Restrict<T: WrappedType> {
     public var wrappedValue: T {
@@ -119,6 +159,12 @@ public struct Restrict<T: WrappedType> {
     }
 }
 
+extension Restrict where T: MonoidType {
+    public init(_ restrict: @escaping (inout T) -> Void) {
+        self.init(T.identity, restrict)
+    }
+}
+
 @propertyWrapper
 public struct WithinRange<T: WrappedType> where T.WrappedValue: Numeric, T.WrappedValue: Comparable {
     public var wrappedValue: T {
@@ -127,10 +173,16 @@ public struct WithinRange<T: WrappedType> where T.WrappedValue: Numeric, T.Wrapp
     }
     private var restriction: Restrict<T>
 
-    public init(_ wrappedValue: T, range: ClosedRange<T.WrappedValue>) {
+    public init(_ wrappedValue: T, _ range: ClosedRange<T.WrappedValue>) {
         restriction = .init(wrappedValue) {
             $0.wrappedValue = min(range.upperBound, max(range.lowerBound, $0.wrappedValue))
         }
+    }
+}
+
+extension WithinRange where T: MonoidType {
+    public init(_ range: ClosedRange<T.WrappedValue>) {
+        self.init(T.identity, range)
     }
 }
 
@@ -146,5 +198,11 @@ public struct Truncated<T: WrappedType> where T.WrappedValue: RangeReplaceableCo
         restriction = .init(wrappedValue) {
             $0.wrappedValue = T.WrappedValue($0.wrappedValue.prefix(maxLength))
         }
+    }
+}
+
+extension Truncated where T: MonoidType {
+    public init(maxLength: Int) {
+        self.init(T.identity, maxLength: maxLength)
     }
 }
