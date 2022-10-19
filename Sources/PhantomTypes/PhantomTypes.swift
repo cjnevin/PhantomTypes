@@ -1,5 +1,5 @@
 @dynamicMemberLookup
-public struct Phantom<Context, WrappedValue> {
+public struct Phantom<Context, WrappedValue>: PhantomType {
     public var wrappedValue: WrappedValue
 
     public init(_ wrappedValue: WrappedValue) {
@@ -9,6 +9,11 @@ public struct Phantom<Context, WrappedValue> {
     public subscript<T>(dynamicMember member: KeyPath<WrappedValue, T>) -> T {
         get { return wrappedValue[keyPath: member] }
     }
+}
+
+public protocol PhantomType {
+    associatedtype WrappedValue
+    var wrappedValue: WrappedValue { get set }
 }
 
 // MARK: - CustomDebugStringConvertible
@@ -96,5 +101,50 @@ extension Phantom: ExpressibleByStringLiteral where WrappedValue: ExpressibleByS
 extension Phantom: ExpressibleByUnicodeScalarLiteral where WrappedValue: ExpressibleByUnicodeScalarLiteral {
     public init(unicodeScalarLiteral value: WrappedValue.UnicodeScalarLiteralType) {
         self = Self(WrappedValue(unicodeScalarLiteral: value))
+    }
+}
+
+// MARK: - Property Wrappers
+
+@propertyWrapper
+public struct Restrict<T: PhantomType> {
+    public var wrappedValue: T {
+        didSet { restrict(&wrappedValue) }
+    }
+    private let restrict: (inout T) -> Void
+    public init(_ wrappedValue: T, _ restrict: @escaping (inout T) -> Void) {
+        self.wrappedValue = wrappedValue
+        self.restrict = restrict
+        self.restrict(&self.wrappedValue)
+    }
+}
+
+@propertyWrapper
+public struct WithinRange<T: PhantomType> where T.WrappedValue: Numeric, T.WrappedValue: Comparable {
+    public var wrappedValue: T {
+        get { restriction.wrappedValue }
+        set { restriction.wrappedValue = newValue }
+    }
+    private var restriction: Restrict<T>
+
+    public init(_ wrappedValue: T, range: ClosedRange<T.WrappedValue>) {
+        restriction = .init(wrappedValue) {
+            $0.wrappedValue = min(range.upperBound, max(range.lowerBound, $0.wrappedValue))
+        }
+    }
+}
+
+@propertyWrapper
+public struct Truncated<T: PhantomType> where T.WrappedValue: RangeReplaceableCollection {
+    public var wrappedValue: T {
+        get { restriction.wrappedValue }
+        set { restriction.wrappedValue = newValue }
+    }
+    private var restriction: Restrict<T>
+
+    public init(_ wrappedValue: T, maxLength: Int) {
+        restriction = .init(wrappedValue) {
+            $0.wrappedValue = T.WrappedValue($0.wrappedValue.prefix(maxLength))
+        }
     }
 }
