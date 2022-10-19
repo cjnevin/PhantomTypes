@@ -39,4 +39,30 @@ final class PhantomTypesTests: XCTestCase {
         XCTAssertEqual(sut, "test")
         XCTAssertFalse(sut.isEmpty)
     }
+    
+    func testRestriction() {
+        @Restrict(18, { $0 = max(18, min($0, 100)) })
+        var sut: Phantom<Self, Int>
+        sut = 17
+        XCTAssertEqual(sut, 18)
+        sut = 101
+        XCTAssertEqual(sut, 100)
+
+        @WithinRange(0, range: 18...100)
+        var withinRange: Phantom<Self, Int>
+        withinRange = 17
+        XCTAssertEqual(withinRange, 18)
+        withinRange = 101
+        XCTAssertEqual(withinRange, 100)
+
+        @Truncated("", maxLength: 5)
+        var truncated: Phantom<Self, String>
+        truncated = "1234567890"
+        XCTAssertEqual(truncated, "12345")
+
+        @Truncated([], maxLength: 5)
+        var truncatedArray: Phantom<Self, [Int]>
+        truncatedArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+        XCTAssertEqual(truncatedArray, [1, 2, 3, 4, 5])
+    }
 }
