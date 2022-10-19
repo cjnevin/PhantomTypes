@@ -1,5 +1,5 @@
 @dynamicMemberLookup
-public struct Phantom<Context, WrappedValue>: PhantomType {
+public struct Phantom<Context, WrappedValue>: WrappedType {
     public var wrappedValue: WrappedValue
 
     public init(_ wrappedValue: WrappedValue) {
@@ -11,7 +11,7 @@ public struct Phantom<Context, WrappedValue>: PhantomType {
     }
 }
 
-public protocol PhantomType {
+public protocol WrappedType {
     associatedtype WrappedValue
     var wrappedValue: WrappedValue { get set }
 }
@@ -107,7 +107,7 @@ extension Phantom: ExpressibleByUnicodeScalarLiteral where WrappedValue: Express
 // MARK: - Property Wrappers
 
 @propertyWrapper
-public struct Restrict<T: PhantomType> {
+public struct Restrict<T: WrappedType> {
     public var wrappedValue: T {
         didSet { restrict(&wrappedValue) }
     }
@@ -120,7 +120,7 @@ public struct Restrict<T: PhantomType> {
 }
 
 @propertyWrapper
-public struct WithinRange<T: PhantomType> where T.WrappedValue: Numeric, T.WrappedValue: Comparable {
+public struct WithinRange<T: WrappedType> where T.WrappedValue: Numeric, T.WrappedValue: Comparable {
     public var wrappedValue: T {
         get { restriction.wrappedValue }
         set { restriction.wrappedValue = newValue }
@@ -135,7 +135,7 @@ public struct WithinRange<T: PhantomType> where T.WrappedValue: Numeric, T.Wrapp
 }
 
 @propertyWrapper
-public struct Truncated<T: PhantomType> where T.WrappedValue: RangeReplaceableCollection {
+public struct Truncated<T: WrappedType> where T.WrappedValue: RangeReplaceableCollection {
     public var wrappedValue: T {
         get { restriction.wrappedValue }
         set { restriction.wrappedValue = newValue }
@@ -146,5 +146,18 @@ public struct Truncated<T: PhantomType> where T.WrappedValue: RangeReplaceableCo
         restriction = .init(wrappedValue) {
             $0.wrappedValue = T.WrappedValue($0.wrappedValue.prefix(maxLength))
         }
+    }
+}
+
+@dynamicMemberLookup
+public struct Phantom<Context, WrappedValue>: WrappedType {
+    public var wrappedValue: WrappedValue
+
+    public init(_ wrappedValue: WrappedValue) {
+        self.wrappedValue = wrappedValue
+    }
+
+    public subscript<T>(dynamicMember member: KeyPath<WrappedValue, T>) -> T {
+        get { return wrappedValue[keyPath: member] }
     }
 }
