@@ -65,4 +65,13 @@ final class PhantomTypesTests: XCTestCase {
         truncatedArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
         XCTAssertEqual(truncatedArray, [1, 2, 3, 4, 5])
     }
+
+    func testRegEx() {
+        @RegEx("[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}")
+        var email: Phantom<Self, String>
+        email = "test@test.com"
+        XCTAssertEqual(email, "test@test.com")
+        email = "test.com"
+        XCTAssertEqual(email, "test@test.com")
+    }
 }
