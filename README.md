@@ -50,3 +50,16 @@ extension Login: EmailHaving {}
 
 User().email = Login().email // type-mismatch error!
 ```
+
+## Adding property wrappers
+
+```swift
+struct User {
+  @RegEx("[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}")
+  var email: Email = ""
+  @Truncated(maxLength: 25)
+  var name: Name = ""
+  @WithinRange(18...100)
+  var age: Age = 18
+  var isAdmin: IsAdmin = false
+}
