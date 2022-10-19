@@ -148,16 +148,3 @@ public struct Truncated<T: WrappedType> where T.WrappedValue: RangeReplaceableCo
         }
     }
 }
-
-@dynamicMemberLookup
-public struct Phantom<Context, WrappedValue>: WrappedType {
-    public var wrappedValue: WrappedValue
-
-    public init(_ wrappedValue: WrappedValue) {
-        self.wrappedValue = wrappedValue
-    }
-
-    public subscript<T>(dynamicMember member: KeyPath<WrappedValue, T>) -> T {
-        get { return wrappedValue[keyPath: member] }
-    }
-}
