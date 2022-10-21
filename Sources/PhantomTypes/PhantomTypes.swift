@@ -3,7 +3,6 @@ import EmptiableTypes
 import MonoidTypes
 import WrappedTypes
 
-@propertyWrapper
 @dynamicMemberLookup
 public struct Phantom<Context, WrappedValue>: WrappedType {
     public var wrappedValue: WrappedValue

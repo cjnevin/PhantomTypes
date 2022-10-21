@@ -50,18 +50,3 @@ extension Login: EmailHaving {}
 
 User().email = Login().email // type-mismatch error!
 ```
-
-## Using property wrappers
-
-```swift
-struct User {
-  @Email()
-  var email: String
-  @Name()
-  var name: String
-  @Age(18)
-  var age: Int
-  @IsAdmin()
-  var isAdmin: Bool
-}
-```
