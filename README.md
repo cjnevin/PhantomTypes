@@ -55,13 +55,13 @@ User().email = Login().email // type-mismatch error!
 
 ```swift
 struct User {
-  @Email("")
+  @Email()
   var email: String
-  @Name("")
+  @Name()
   var name: String
   @Age(18)
   var age: Int
-  @IsAdmin(false)
+  @IsAdmin()
   var isAdmin: Bool
 }
 ```

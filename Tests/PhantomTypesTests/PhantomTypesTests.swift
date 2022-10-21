@@ -2,14 +2,25 @@ import XCTest
 @testable import PhantomTypes
 
 final class PhantomTypesTests: XCTestCase {
-    func testPropertyWrapper() {
-        struct Wrapped {
+    func testPropertyWrapperMonoids() {
+        struct User {
+            typealias Email = Phantom<Self, String>
+            typealias Age = Phantom<Self, Int>
             typealias IsAdmin = Phantom<Self, Bool>
-            @IsAdmin(false)
-            var value: Bool
+
+            @Email()
+            var email: String
+
+            @Age()
+            var age: Int
+
+            @IsAdmin()
+            var isAdmin: Bool
         }
-        let wrapped = Wrapped()
-        XCTAssertEqual(wrapped.value, false)
+        let user = User()
+        XCTAssertEqual(user.age, 0)
+        XCTAssertEqual(user.email, "")
+        XCTAssertEqual(user.isAdmin, false)
     }
 
     func testArray() {

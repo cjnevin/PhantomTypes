@@ -15,7 +15,7 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
         .package(name: "EmptiableTypes", url: "https://github.com/cjnevin/EmptiableTypes", from: "1.0.1"),
-        .package(name: "MonoidTypes", url: "https://github.com/cjnevin/MonoidTypes", from: "1.0.0"),
+        .package(name: "MonoidTypes", url: "https://github.com/cjnevin/MonoidTypes", from: "1.0.1"),
         .package(name: "WrappedTypes", url: "https://github.com/cjnevin/WrappedTypes", from: "1.0.0")
     ],
     targets: [
