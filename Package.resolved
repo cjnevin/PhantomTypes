@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/cjnevin/MonoidTypes",
         "state": {
           "branch": null,
-          "revision": "ac4e8f354008d339d48b4258c1d19b093610e5a4",
-          "version": "1.0.1"
+          "revision": "c7cb6cc7b5523f75a26ad0aaafbef42fbbcca99b",
+          "version": "1.0.2"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/cjnevin/WrappedTypes",
         "state": {
           "branch": null,
-          "revision": "ab1655a2f36a8d61d8efc97bf456b948c04bf099",
-          "version": "1.0.0"
+          "revision": "5302b23177cb8a3c350668e43fa85c24b4ada65e",
+          "version": "1.0.1"
         }
       }
     ]
