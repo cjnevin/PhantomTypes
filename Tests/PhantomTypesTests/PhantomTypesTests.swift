@@ -2,6 +2,16 @@ import XCTest
 @testable import PhantomTypes
 
 final class PhantomTypesTests: XCTestCase {
+    func testPropertyWrapper() {
+        struct Wrapped {
+            typealias IsAdmin = Phantom<Self, Bool>
+            @IsAdmin(false)
+            var value: Bool
+        }
+        let wrapped = Wrapped()
+        XCTAssertEqual(wrapped.value, false)
+    }
+
     func testArray() {
         let sut: Phantom<Self, [String]> = ["a", "b", "c"]
         XCTAssertEqual(sut, ["a", "b", "c"])
