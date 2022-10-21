@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "EmptiableTypes",
+        "repositoryURL": "https://github.com/cjnevin/EmptiableTypes",
+        "state": {
+          "branch": null,
+          "revision": "116a97dda2b93f36f95a2009ac3a143cc4405147",
+          "version": "1.0.1"
+        }
+      },
+      {
+        "package": "MonoidTypes",
+        "repositoryURL": "https://github.com/cjnevin/MonoidTypes",
+        "state": {
+          "branch": null,
+          "revision": "1dd03ab77047cd11c26e4246daf92a0409857c61",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "WrappedTypes",
+        "repositoryURL": "https://github.com/cjnevin/WrappedTypes",
+        "state": {
+          "branch": null,
+          "revision": "ab1655a2f36a8d61d8efc97bf456b948c04bf099",
+          "version": "1.0.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

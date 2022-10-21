@@ -1,4 +1,7 @@
 import Foundation
+import EmptiableTypes
+import MonoidTypes
+import WrappedTypes
 
 @dynamicMemberLookup
 public struct Phantom<Context, WrappedValue>: WrappedType {
@@ -11,46 +14,6 @@ public struct Phantom<Context, WrappedValue>: WrappedType {
     public subscript<T>(dynamicMember member: KeyPath<WrappedValue, T>) -> T {
         get { return wrappedValue[keyPath: member] }
     }
-}
-
-// MARK: - Monoid
-
-public protocol MonoidType {
-    static var identity: Self { get }
-}
-
-extension Phantom: MonoidType where WrappedValue: MonoidType {
-    public static var identity: Phantom<Context, WrappedValue> {
-        Self(WrappedValue.identity)
-    }
-
-    public init() {
-        self.init(WrappedValue.identity)
-    }
-}
-
-extension String: MonoidType {
-    public static var identity: String = ""
-}
-
-extension Int: MonoidType {
-    public static var identity: Int = 0
-}
-
-extension Float: MonoidType {
-    public static var identity: Float = 0
-}
-
-extension Double: MonoidType {
-    public static var identity: Double = 0
-}
-
-extension Array: MonoidType {
-    public static var identity: Array<Element> { [] }
-}
-
-extension Dictionary: MonoidType {
-    public static var identity: Dictionary<Key, Value> { [:] }
 }
 
 // MARK: - CustomDebugStringConvertible
@@ -141,95 +104,18 @@ extension Phantom: ExpressibleByUnicodeScalarLiteral where WrappedValue: Express
     }
 }
 
-// MARK: - Property Wrappers
-
-public protocol WrappedType {
-    associatedtype WrappedValue
-    var wrappedValue: WrappedValue { get set }
-}
-
-@propertyWrapper
-public struct Restrict<T: WrappedType> {
-    public var wrappedValue: T {
-        didSet { restrict(&wrappedValue) }
+extension Phantom: MonoidType where WrappedValue: MonoidType {
+    public static var identity: Phantom<Context, WrappedValue> {
+        Self(WrappedValue.identity)
     }
-    private let restrict: (inout T) -> Void
-    public init(_ wrappedValue: T, _ restrict: @escaping (inout T) -> Void) {
-        self.wrappedValue = wrappedValue
-        self.restrict = restrict
-        self.restrict(&self.wrappedValue)
+
+    public init() {
+        self.init(WrappedValue.identity)
     }
 }
 
-extension Restrict where T: MonoidType {
-    public init(_ restrict: @escaping (inout T) -> Void) {
-        self.init(T.identity, restrict)
-    }
-}
-
-@propertyWrapper
-public struct WithinRange<T: WrappedType> where T.WrappedValue: Numeric, T.WrappedValue: Comparable {
-    public var wrappedValue: T {
-        get { restriction.wrappedValue }
-        set { restriction.wrappedValue = newValue }
-    }
-    private var restriction: Restrict<T>
-
-    public init(_ wrappedValue: T, _ range: ClosedRange<T.WrappedValue>) {
-        restriction = .init(wrappedValue) {
-            $0.wrappedValue = min(range.upperBound, max(range.lowerBound, $0.wrappedValue))
-        }
-    }
-}
-
-extension WithinRange where T: MonoidType {
-    public init(_ range: ClosedRange<T.WrappedValue>) {
-        self.init(T.identity, range)
-    }
-}
-
-@propertyWrapper
-public struct Truncated<T: WrappedType> where T.WrappedValue: RangeReplaceableCollection {
-    public var wrappedValue: T {
-        get { restriction.wrappedValue }
-        set { restriction.wrappedValue = newValue }
-    }
-    private var restriction: Restrict<T>
-
-    public init(_ wrappedValue: T, maxLength: Int) {
-        restriction = .init(wrappedValue) {
-            $0.wrappedValue = T.WrappedValue($0.wrappedValue.prefix(maxLength))
-        }
-    }
-}
-
-extension Truncated where T: MonoidType {
-    public init(maxLength: Int) {
-        self.init(T.identity, maxLength: maxLength)
-    }
-}
-
-@propertyWrapper
-public struct RegEx<T: WrappedType> where T.WrappedValue == String {
-    public var wrappedValue: T {
-        didSet {
-            if !validation(wrappedValue.wrappedValue) {
-                wrappedValue = oldValue
-            }
-        }
-    }
-    private let validation: (String) -> Bool
-
-    public init(_ wrappedValue: T, _ regex: String) {
-        self.wrappedValue = wrappedValue
-        validation = { candidate in
-            NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: candidate)
-        }
-    }
-}
-
-extension RegEx where T: MonoidType {
-    public init(_ regex: String) {
-        self.init(T.identity, regex)
+extension Phantom: EmptiableType where WrappedValue: EmptiableType {
+    public var isEmpty: Bool {
+        wrappedValue.isEmpty
     }
 }
