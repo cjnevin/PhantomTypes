@@ -26,15 +26,27 @@ extension Phantom: CustomDebugStringConvertible {
 
 // MARK: - Common Conformances
 
+extension Phantom: Equatable where WrappedValue: Equatable {}
+extension Phantom: Hashable where WrappedValue: Hashable {}
+
 extension Phantom: Comparable where WrappedValue: Comparable {
     public static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.wrappedValue < rhs.wrappedValue
     }
 }
-extension Phantom: Equatable where WrappedValue: Equatable {}
-extension Phantom: Hashable where WrappedValue: Hashable {}
-extension Phantom: Decodable where WrappedValue: Decodable {}
-extension Phantom: Encodable where WrappedValue: Encodable {}
+
+extension Phantom: Encodable where WrappedValue: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(wrappedValue)
+    }
+}
+
+extension Phantom: Decodable where WrappedValue: Decodable {
+    public init(from decoder: Decoder) throws {
+        wrappedValue = try decoder.singleValueContainer().decode(WrappedValue.self)
+    }
+}
 
 extension Phantom: Sequence where WrappedValue: Sequence {
     public typealias Element = WrappedValue.Element
